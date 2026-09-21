@@ -127,6 +127,7 @@
 <body>
     <div class="min-h-screen bg-[#F8FAFB] text-slate-800">
         @include('buyer.partials.header')
+        @include('buyer.partials.promo-banner')
 
         <main class="min-h-screen">
             @yield('content')

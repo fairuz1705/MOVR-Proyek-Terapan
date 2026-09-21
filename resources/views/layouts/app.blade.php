@@ -217,6 +217,8 @@
             </div>
         </header>
 
+        @include('buyer.partials.promo-banner')
+
         {{-- Toast --}}
         <div x-show="toast.show" x-cloak class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60]">
             <div class="rounded-2xl border border-[#63a2bb]/30 bg-white px-4 py-3 text-sm shadow-lg">

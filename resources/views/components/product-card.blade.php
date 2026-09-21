@@ -1,4 +1,18 @@
-@props(['produk', 'showWishlistBtn' => true, 'badge' => null, 'promo' => null])
+@props([
+    'produk' => null,
+    'showWishlistBtn' => true,
+    'badge' => null,
+    'promo' => null,
+    'image' => null,
+    'title' => null,
+    'price' => 0,
+    'category' => null,
+    'rating' => 5.0,
+    'productId' => null,
+    'detailId' => null,
+    'detailUrl' => null,
+    'addCartUrl' => null
+])
 
 @php
     use App\Models\Wishlist;
@@ -6,32 +20,118 @@
     $isLoggedIn = auth()->check();
     $wishlistOwnerColumn = Wishlist::ownerColumn();
     $wishlistOwnerId = $isLoggedIn ? Wishlist::resolveOwnerId(auth()->user()) : null;
-    $isInWishlist = $isLoggedIn && $wishlistOwnerId
-        ? Wishlist::where($wishlistOwnerColumn, $wishlistOwnerId)->where('produk_id', $produk->produk_id)->exists()
+
+    $pId = $produk->produk_id ?? $productId ?? 0;
+    $pSlug = $produk->slug ?? null;
+    $pName = $produk->nama_produk ?? $title ?? 'Produk';
+    $pPrice = (float)($produk->harga_dasar ?? $price ?? 0);
+    $pCat = $produk->kategori->nama_kategori ?? $category ?? null;
+
+    $isInWishlist = ($isLoggedIn && $wishlistOwnerId && $pId)
+        ? Wishlist::where($wishlistOwnerColumn, $wishlistOwnerId)->where('produk_id', $pId)->exists()
         : false;
 
-    $avgRating = $produk->rata_rating ?? (isset($produk->ratings) ? ($produk->ratings->avg('bintang') ?? 0) : 0);
+    $avgRating = $produk->rata_rating ?? (isset($produk->ratings) ? ($produk->ratings->avg('bintang') ?? 0) : ($rating ?? 5.0));
     $reviewCount = $produk->jumlah_ulasan ?? (isset($produk->ratings) ? $produk->ratings->count() : 0);
 
     $promoDiscount = 0;
     if (! empty($promo)) {
         $promoDiscount = (float) ($promo->diskon ?? $promo->nominal_diskon ?? 0);
         if ($promoDiscount <= 0 && ! empty($promo->persen_diskon)) {
-            $promoDiscount = ((float) $produk->harga_dasar) * ((float) $promo->persen_diskon) / 100;
+            $promoDiscount = $pPrice * ((float) $promo->persen_diskon) / 100;
         }
     }
 
-    $imageSource = optional($produk->images->first())->url_lengkap
-        ?? (optional($produk->images->first())->url_gambar ? asset('storage/' . $produk->images->first()->url_gambar) : asset('images/default-product.svg'));
-    $detailId = optional($produk->details->first())->detail_produk_id;
-    $finalPrice = $promoDiscount > 0 ? max(0, (float) $produk->harga_dasar - $promoDiscount) : (float) $produk->harga_dasar;
+    $imageSource = $image ?? (optional($produk?->images?->first())->url_lengkap
+        ?? (optional($produk?->images?->first())->url_gambar ? asset('storage/' . $produk->images->first()->url_gambar) : asset('images/default-product.svg')));
+    
+    $dId = $detailId ?? optional($produk?->details?->first())->detail_produk_id;
+    $finalPrice = $promoDiscount > 0 ? max(0, $pPrice - $promoDiscount) : $pPrice;
+    $productUrl = $pSlug ? route('product.show', $pSlug) : ($detailUrl ?? '#');
 @endphp
 
-<div class="group flex h-full flex-col overflow-hidden rounded-[2rem] border border-slate-200/50 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(99,162,187,0.12)]" x-data="{ isWishlisted: {{ $isInWishlist ? 'true' : 'false' }}, loading: false, async toggleWishlist() { if (!{{ $isLoggedIn ? 'true' : 'false' }}) { window.location.href = '{{ route('login') }}'; return; } this.loading = true; try { const res = await fetch('{{ route('wishlist.toggle') }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'), 'Accept': 'application/json' }, body: JSON.stringify({ produk_id: {{ $produk->produk_id }} }) }); const data = await res.json(); if (data.success) { const wasWishlisted = this.isWishlisted; this.isWishlisted = !this.isWishlisted; window.dispatchEvent(new Event('wishlist-updated')); if (wasWishlisted && !this.isWishlisted) { window.dispatchEvent(new CustomEvent('wishlist-removed', { detail: { produk_id: {{ $produk->produk_id }} } })); } if (typeof showToast === 'function') { showToast(this.isWishlisted ? '{{ __('ui.product_added_wishlist') }}' : '{{ __('ui.product_removed_wishlist') }}', this.isWishlisted ? 'success' : 'info'); } } else if (data.message && typeof showToast === 'function') { showToast(data.message, 'error'); } } catch (error) { console.error(error); if (typeof showToast === 'function') { showToast('{{ __('ui.wishlist_update_failed') }}', 'error'); } } finally { this.loading = false; } }, async addToCart() { if (!{{ $isLoggedIn ? 'true' : 'false' }}) { window.location.href = '{{ route('login') }}'; return; } const detailId = {{ $detailId ? (int) $detailId : 'null' }}; if (!detailId) { if (typeof showToast === 'function') { showToast('{{ __('ui.product_variant_unavailable') }}', 'warning'); } return; } try { const fd = new FormData(); fd.append('detail_produk_id', detailId); fd.append('jumlah', 1); const res = await fetch('{{ route('cart.add') }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'), 'Accept': 'application/json' }, body: fd }); const data = await res.json(); if (data.success) { window.dispatchEvent(new Event('cart-updated')); if (typeof showToast === 'function') { showToast(data.message || '{{ __('ui.product_added_cart') }}', 'success'); } } else if (typeof showToast === 'function') { showToast(data.message || '{{ __('ui.product_add_cart_failed') }}', 'error'); } } catch (error) { console.error(error); if (typeof showToast === 'function') { showToast('{{ __('ui.product_add_cart_failed') }}', 'error'); } } } }">
+<div class="group flex h-full flex-col overflow-hidden rounded-[2rem] border border-slate-200/50 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(99,162,187,0.12)]" 
+     x-data="{ 
+        isWishlisted: {{ $isInWishlist ? 'true' : 'false' }}, 
+        loading: false, 
+        async toggleWishlist() { 
+            if (!{{ $isLoggedIn ? 'true' : 'false' }}) { window.location.href = '{{ route('login') }}'; return; } 
+            this.loading = true; 
+            try { 
+                const res = await fetch('{{ route('wishlist.toggle') }}', { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'), 
+                        'Accept': 'application/json' 
+                    }, 
+                    body: JSON.stringify({ produk_id: {{ $pId }} }) 
+                }); 
+                const data = await res.json(); 
+                if (data.success) { 
+                    const wasWishlisted = this.isWishlisted; 
+                    this.isWishlisted = !this.isWishlisted; 
+                    window.dispatchEvent(new Event('wishlist-updated')); 
+                    if (wasWishlisted && !this.isWishlisted) { 
+                        window.dispatchEvent(new CustomEvent('wishlist-removed', { detail: { produk_id: {{ $pId }} } })); 
+                    } 
+                    if (typeof showToast === 'function') { 
+                        showToast(this.isWishlisted ? '{{ __('ui.product_added_wishlist') }}' : '{{ __('ui.product_removed_wishlist') }}', this.isWishlisted ? 'success' : 'info'); 
+                    } 
+                } else if (data.message && typeof showToast === 'function') { 
+                    showToast(data.message, 'error'); 
+                } 
+            } catch (error) { 
+                console.error(error); 
+                if (typeof showToast === 'function') { 
+                    showToast('{{ __('ui.wishlist_update_failed') }}', 'error'); 
+                } 
+            } finally { 
+                this.loading = false; 
+            } 
+        }, 
+        async addToCart() { 
+            if (!{{ $isLoggedIn ? 'true' : 'false' }}) { window.location.href = '{{ route('login') }}'; return; } 
+            const detailId = {{ $dId ? (int) $dId : 'null' }}; 
+            if (!detailId) { 
+                if (typeof showToast === 'function') { 
+                    showToast('{{ __('ui.product_variant_unavailable') }}', 'warning'); 
+                } 
+                return; 
+            } 
+            try { 
+                const fd = new FormData(); 
+                fd.append('detail_produk_id', detailId); 
+                fd.append('jumlah', 1); 
+                const res = await fetch('{{ route('cart.add') }}', { 
+                    method: 'POST', 
+                    headers: { 
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'), 
+                        'Accept': 'application/json' 
+                    }, 
+                    body: fd 
+                }); 
+                const data = await res.json(); 
+                if (data.success) { 
+                    window.dispatchEvent(new Event('cart-updated')); 
+                    if (typeof showToast === 'function') { 
+                        showToast(data.message || '{{ __('ui.product_added_cart') }}', 'success'); 
+                    } 
+                } else if (typeof showToast === 'function') { 
+                    showToast(data.message || '{{ __('ui.product_add_cart_failed') }}', 'error'); 
+                } 
+            } catch (error) { 
+                console.error(error); 
+                if (typeof showToast === 'function') { 
+                    showToast('{{ __('ui.product_add_cart_failed') }}', 'error'); 
+                } 
+            } 
+        } 
+     }">
+    
     <div class="relative aspect-[3/4] overflow-hidden bg-slate-50">
-        <a href="{{ route('product.show', $produk->slug) }}" class="block h-full w-full">
-            <img src="{{ $imageSource }}" alt="{{ $produk->nama_produk }}" class="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105" onerror="this.src='{{ asset('images/default-product.svg') }}';">
-            <!-- Subtle gradient overlay at the bottom of image -->
+        <a href="{{ $productUrl }}" class="block h-full w-full">
+            <img src="{{ $imageSource }}" alt="{{ $pName }}" class="h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105" onerror="this.src='{{ asset('images/default-product.svg') }}';">
             <div class="absolute inset-0 bg-gradient-to-t from-slate-900/10 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
         </a>
 
@@ -54,14 +154,14 @@
     </div>
 
     <div class="flex flex-1 flex-col p-5 sm:p-6 bg-white">
-        @if(isset($produk->kategori->nama_kategori))
+        @if(!empty($pCat))
             <span class="text-[10px] font-black uppercase tracking-[0.2em] text-[#63A2BB]/85 mb-1.5 block">
-                {{ $produk->kategori->nama_kategori }}
+                {{ $pCat }}
             </span>
         @endif
 
-        <a href="{{ route('product.show', $produk->slug) }}" class="line-clamp-2 text-sm font-extrabold text-slate-800 transition-colors duration-200 hover:text-[#63A2BB] leading-snug min-h-[2.5rem]">
-            {{ $produk->nama_produk }}
+        <a href="{{ $productUrl }}" class="line-clamp-2 text-sm font-extrabold text-slate-800 transition-colors duration-200 hover:text-[#63A2BB] leading-snug min-h-[2.5rem]">
+            {{ $pName }}
         </a>
 
         <div class="mt-2.5 flex items-center gap-2 text-[11px] text-slate-400 font-semibold">
@@ -80,11 +180,11 @@
         <div class="mt-4 flex items-end justify-between gap-3">
             <div>
                 @if($promoDiscount > 0)
-                    <div class="text-[10px] font-bold text-slate-400 line-through tracking-wider">Rp {{ number_format((float) $produk->harga_dasar, 0, ',', '.') }}</div>
+                    <div class="text-[10px] font-bold text-slate-400 line-through tracking-wider">Rp {{ number_format((float) $pPrice, 0, ',', '.') }}</div>
                 @endif
                 <div class="text-base font-black text-slate-900">Rp {{ number_format((float) $finalPrice, 0, ',', '.') }}</div>
             </div>
-            @if(($produk->total_terjual ?? 0) > 0)
+            @if(isset($produk->total_terjual) && $produk->total_terjual > 0)
                 <div class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
                     {{ number_format((int) $produk->total_terjual) }} {{ __('ui.products_sold') }}
                 </div>
@@ -92,7 +192,7 @@
         </div>
 
         <div class="mt-5">
-            <a href="{{ route('product.show', $produk->slug) }}" class="inline-flex items-center justify-center w-full rounded-full border border-slate-200 bg-white py-3 text-xs font-bold text-slate-800 transition-all duration-300 hover:border-[#63A2BB] hover:bg-[#63A2BB] hover:text-white shadow-sm">
+            <a href="{{ $productUrl }}" class="inline-flex items-center justify-center w-full rounded-full border border-slate-200 bg-white py-3 text-xs font-bold text-slate-800 transition-all duration-300 hover:border-[#63A2BB] hover:bg-[#63A2BB] hover:text-white shadow-sm">
                 {{ __('ui.view_detail') }}
             </a>
         </div>
