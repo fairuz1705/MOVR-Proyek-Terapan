@@ -3,6 +3,9 @@
 @section('content')
 
 @php
+  $tryOnCategoryType = \App\Services\TryOn\TryOnCategoryHelper::determineType($product);
+  $isTryOnSupported = ($tryOnCategoryType !== 'unsupported');
+
   $variantImages = collect($product->details ?? $product->detailProduk ?? [])
     ->filter(fn($detail) => !is_null($detail->warna_id))
     ->groupBy('warna_id')
@@ -307,36 +310,49 @@
       </div>
 
       {{-- Action Buttons --}}
-      <div class="flex gap-3 mt-6">
+      <div class="space-y-3 mt-6" x-data="{ tryonSupported: @js($isTryOnSupported) }">
         <button type="button"
-                @click="addToCart()"
-                :disabled="!selectedDetail || loading"
-                :class="(!selectedDetail || loading)
-                  ? 'opacity-60 cursor-not-allowed bg-[#63A2BB]'
-                  : 'bg-[#63A2BB] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#63A2BB]/30 hover:bg-[#4A8BA3]'"
-                class="flex-1 text-white py-4 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200">
-          <svg x-show="loading" class="animate-spin w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                @click="window.dispatchEvent(new CustomEvent('open-tryon-modal'))"
+                :disabled="!tryonSupported"
+                :class="!tryonSupported ? 'opacity-50 cursor-not-allowed bg-slate-200 text-slate-500' : 'bg-gradient-to-r from-[#63A2BB] via-[#5293AC] to-[#4A8BA3] text-white hover:shadow-lg hover:shadow-[#63A2BB]/30 hover:-translate-y-0.5'"
+                class="w-full py-3.5 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 shadow-md">
+          <svg class="w-5 h-5 text-amber-300 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
           </svg>
-          <svg x-show="!loading" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-          </svg>
-          <span x-text="loading ? 'Menambahkan...' : '{{ __('ui.add_to_cart') }}'"></span>
+          <span x-text="tryonSupported ? '✨ {{ __('ui.tryon_button') }}' : '{{ __('ui.tryon_unsupported') }}'"></span>
         </button>
 
-        <button type="button"
-                @click="buyNow()"
-                :disabled="!selectedDetail || loading"
-                :class="(!selectedDetail || loading)
-                  ? 'opacity-60 cursor-not-allowed'
-                  : 'hover:-translate-y-1 hover:shadow-lg hover:bg-gray-800'"
-                class="flex-1 bg-gray-900 text-white py-4 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
-          Beli Sekarang
-        </button>
+        <div class="flex gap-3">
+          <button type="button"
+                  @click="addToCart()"
+                  :disabled="!selectedDetail || loading"
+                  :class="(!selectedDetail || loading)
+                    ? 'opacity-60 cursor-not-allowed bg-[#63A2BB]'
+                    : 'bg-[#63A2BB] hover:-translate-y-1 hover:shadow-lg hover:shadow-[#63A2BB]/30 hover:bg-[#4A8BA3]'"
+                  class="flex-1 text-white py-4 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200">
+            <svg x-show="loading" class="animate-spin w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <svg x-show="!loading" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            <span x-text="loading ? 'Menambahkan...' : '{{ __('ui.add_to_cart') }}'"></span>
+          </button>
+
+          <button type="button"
+                  @click="buyNow()"
+                  :disabled="!selectedDetail || loading"
+                  :class="(!selectedDetail || loading)
+                    ? 'opacity-60 cursor-not-allowed'
+                    : 'hover:-translate-y-1 hover:shadow-lg hover:bg-gray-800'"
+                  class="flex-1 bg-gray-900 text-white py-4 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Beli Sekarang
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -554,5 +570,551 @@
                 document.querySelector('[data-cart-badge]').textContent = data.count;
             });
     });
+</script>
+
+{{-- AI Virtual Try-On Modal Component --}}
+<div x-data="tryOnModalState()"
+     x-init="init()"
+     @open-tryon-modal.window="openModal()"
+     @keydown.escape.window="closeModal()"
+     x-show="isOpen"
+     x-cloak
+     class="fixed inset-0 z-50 overflow-y-auto"
+     aria-labelledby="tryon-modal-title"
+     role="dialog"
+     aria-modal="true">
+  
+  {{-- Overlay --}}
+  <div x-show="isOpen"
+       x-transition:enter="ease-out duration-300"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="ease-in duration-200"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       @click="closeModal()"
+       class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+
+  {{-- Modal Dialog --}}
+  <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
+    <div x-show="isOpen"
+         x-transition:enter="ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave="ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+         class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all w-full max-w-xl border border-slate-100">
+      
+      {{-- Modal Header --}}
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-[#63A2BB]/10 text-[#63A2BB] flex items-center justify-center font-bold">
+            ✨
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900" id="tryon-modal-title">
+              {{ __('ui.tryon_title') }}
+            </h3>
+            <p class="text-xs text-slate-500">{{ __('ui.tryon_subtitle') }}</p>
+          </div>
+        </div>
+        <button @click="closeModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      {{-- Stepper Progress Bar --}}
+      <div class="px-6 pt-4 pb-2 border-b border-slate-100">
+        <div class="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
+          <span :class="step >= 1 ? 'text-[#63A2BB] font-bold' : ''">1. {{ __('ui.tryon_step_1') }}</span>
+          <span :class="step >= 2 ? 'text-[#63A2BB] font-bold' : ''">2. {{ __('ui.tryon_step_2') }}</span>
+          <span :class="step >= 3 ? 'text-[#63A2BB] font-bold' : ''">3. {{ __('ui.tryon_step_3') }}</span>
+          <span :class="step >= 4 ? 'text-[#63A2BB] font-bold' : ''">4. {{ __('ui.tryon_step_4') }}</span>
+        </div>
+        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+          <div class="bg-[#63A2BB] h-full transition-all duration-300" :style="`width: ${step * 25}%`"></div>
+        </div>
+      </div>
+
+      {{-- Modal Body --}}
+      <div class="p-6">
+        
+        {{-- STEP 1: Upload Foto --}}
+        <div x-show="step === 1" class="space-y-4">
+          <div class="bg-amber-50 rounded-2xl p-4 border border-amber-200/60 text-xs text-amber-800 space-y-1">
+            <p class="font-bold flex items-center gap-1.5 text-amber-900">
+              <span>💡</span> {{ __('ui.tryon_guidelines_title') }}
+            </p>
+            <ul class="list-disc list-inside space-y-0.5 text-amber-800/90 pl-1">
+              <li>{{ __('ui.tryon_guideline_1') }}</li>
+              <li>{{ __('ui.tryon_guideline_2') }}</li>
+              <li>{{ __('ui.tryon_guideline_3') }}</li>
+            </ul>
+          </div>
+
+          {{-- Upload Drop Area --}}
+          <div class="relative border-2 border-dashed border-slate-300 hover:border-[#63A2BB] rounded-2xl p-6 text-center transition-colors bg-slate-50/50"
+               @dragover.prevent
+               @drop.prevent="handleFileDrop($event)">
+            
+            <template x-if="!photoPreviewUrl">
+              <div class="space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-[#63A2BB]/10 text-[#63A2BB] mx-auto flex items-center justify-center">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-slate-700">{{ __('ui.tryon_upload_drag') }}</p>
+                  <p class="text-[11px] text-slate-400 mt-0.5">JPG, PNG, WEBP (Maks 5 MB)</p>
+                </div>
+                <div class="flex items-center justify-center gap-2 pt-2">
+                  <label class="cursor-pointer bg-[#63A2BB] hover:bg-[#4A8BA3] text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-colors shadow-sm">
+                    Pilih Foto
+                    <input type="file" @change="selectFile($event.target.files[0])" accept="image/jpeg,image/png,image/webp" class="hidden">
+                  </label>
+                  <label class="cursor-pointer bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-colors shadow-sm flex items-center gap-1.5">
+                    <span>📷</span> {{ __('ui.tryon_upload_camera') }}
+                    <input type="file" @change="selectFile($event.target.files[0])" accept="image/*" capture="environment" class="hidden">
+                  </label>
+                </div>
+              </div>
+            </template>
+
+            <template x-if="photoPreviewUrl">
+              <div class="relative inline-block group">
+                <img :src="photoPreviewUrl" class="max-h-64 rounded-xl mx-auto object-cover border border-slate-200 shadow-md">
+                <button @click="photoFile = null; photoPreviewUrl = null; sesiId = null"
+                        class="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            </template>
+          </div>
+
+          {{-- Consent Checkbox --}}
+          <label class="flex items-start gap-2.5 cursor-pointer bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <input type="checkbox" x-model="consent" class="mt-0.5 rounded text-[#63A2BB] focus:ring-[#63A2BB]">
+            <span class="text-xs text-slate-600 leading-relaxed font-medium">
+              {{ __('ui.tryon_consent_checkbox') }}
+            </span>
+          </label>
+
+          {{-- Action Button --}}
+          <div class="flex justify-end pt-2">
+            <button @click="uploadPhoto()"
+                    :disabled="!consent || (!photoFile && !sesiId) || isUploading"
+                    class="bg-[#63A2BB] hover:bg-[#4A8BA3] text-white font-bold text-xs py-3 px-6 rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              <svg x-show="isUploading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              <span>Lanjut Pilih Produk &rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        {{-- STEP 2: Pilih Produk --}}
+        <div x-show="step === 2" class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-800">Produk yang Dicoba:</h4>
+            <span class="text-[11px] text-slate-400">Pilih dari katalog atau pencarian</span>
+          </div>
+
+          {{-- Selected Product Card --}}
+          <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-[#63A2BB]/30">
+            <img :src="selectedProduct.gambar_url" class="w-14 h-14 rounded-xl object-cover border border-slate-200">
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-bold text-slate-900 truncate" x-text="selectedProduct.nama_produk"></p>
+              <p class="text-xs font-semibold text-[#63A2BB] mt-0.5">Rp <span x-text="selectedProduct.harga"></span></p>
+            </div>
+            <span class="bg-[#63A2BB]/10 text-[#63A2BB] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Terpilih</span>
+          </div>
+
+          {{-- Search & Filter Section --}}
+          <div class="space-y-2">
+            <div class="relative">
+              <input type="text"
+                     x-model.debounce.300ms="searchQuery"
+                     @input="searchProducts()"
+                     placeholder="{{ __('ui.tryon_search_placeholder') }}"
+                     class="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#63A2BB]">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+
+            {{-- Category Filter Chips --}}
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+              <button @click="categoryFilter = ''; searchProducts()"
+                      :class="categoryFilter === '' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                      class="px-3 py-1 rounded-full font-medium transition-colors">
+                {{ __('ui.tryon_filter_all') }}
+              </button>
+              <button @click="categoryFilter = 'top'; searchProducts()"
+                      :class="categoryFilter === 'top' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                      class="px-3 py-1 rounded-full font-medium transition-colors">
+                {{ __('ui.tryon_filter_top') }}
+              </button>
+              <button @click="categoryFilter = 'bottom'; searchProducts()"
+                      :class="categoryFilter === 'bottom' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                      class="px-3 py-1 rounded-full font-medium transition-colors">
+                {{ __('ui.tryon_filter_bottom') }}
+              </button>
+              <button @click="categoryFilter = 'dress'; searchProducts()"
+                      :class="categoryFilter === 'dress' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                      class="px-3 py-1 rounded-full font-medium transition-colors">
+                {{ __('ui.tryon_filter_dress') }}
+              </button>
+              <button @click="categoryFilter = 'outer'; searchProducts()"
+                      :class="categoryFilter === 'outer' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                      class="px-3 py-1 rounded-full font-medium transition-colors">
+                {{ __('ui.tryon_filter_outer') }}
+              </button>
+            </div>
+          </div>
+
+          {{-- Product Search Results Grid --}}
+          <div x-show="searchResults.length > 0" class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+            <template x-for="p in searchResults" :key="p.produk_id">
+              <div @click="selectProductForTryOn(p)"
+                   :class="selectedProduct.produk_id === p.produk_id ? 'border-[#63A2BB] bg-[#63A2BB]/5' : 'border-slate-200 hover:border-slate-300'"
+                   class="flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all">
+                <img :src="p.gambar_url" class="w-10 h-10 rounded-lg object-cover">
+                <div class="min-w-0 flex-1">
+                  <p class="text-[11px] font-bold text-slate-800 truncate" x-text="p.nama_produk"></p>
+                  <p class="text-[10px] text-[#63A2BB] font-semibold">Rp <span x-text="p.harga"></span></p>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          {{-- Action Buttons --}}
+          <div class="flex items-center justify-between pt-2">
+            <button @click="step = 1" class="text-xs font-bold text-slate-500 hover:text-slate-800">
+              &larr; Kembali
+            </button>
+            <button @click="startGeneration()"
+                    class="bg-[#63A2BB] hover:bg-[#4A8BA3] text-white font-bold text-xs py-3 px-6 rounded-xl transition-all shadow-md flex items-center gap-2">
+              <span>✨ {{ __('ui.tryon_title') }}</span>
+            </button>
+          </div>
+        </div>
+
+        {{-- STEP 3: Loading Generating --}}
+        <div x-show="step === 3" class="py-8 text-center space-y-6">
+          <div class="relative w-20 h-20 mx-auto">
+            <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-[#63A2BB] border-t-transparent animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-xl">✨</div>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-sm font-bold text-slate-900">{{ __('ui.tryon_generating_title') }}</h4>
+            <p class="text-xs text-slate-500 min-h-[20px]" x-text="generatingMessages[generatingMessageIndex]"></p>
+          </div>
+
+          {{-- Progress Bar --}}
+          <div class="w-full max-w-xs mx-auto bg-slate-100 h-2 rounded-full overflow-hidden">
+            <div class="bg-[#63A2BB] h-full transition-all duration-500" :style="`width: ${progressPercent}%`"></div>
+          </div>
+        </div>
+
+        {{-- STEP 4: Hasil Try-On --}}
+        <div x-show="step === 4" class="space-y-4">
+          
+          {{-- Before / After Interactive Visualizer --}}
+          <div class="relative max-h-80 rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 flex justify-center items-center">
+            <template x-if="resultImageUrl">
+              <img :src="resultImageUrl" class="max-h-80 w-auto object-contain mx-auto rounded-xl">
+            </template>
+          </div>
+
+          {{-- Disclaimer Notice --}}
+          <div class="bg-blue-50/70 p-3 rounded-xl border border-blue-200/60 text-[11px] text-blue-800 leading-relaxed">
+            <span class="font-bold">ⓘ Disclaimer:</span> {{ __('ui.tryon_disclaimer') }}
+          </div>
+
+          {{-- Action Buttons --}}
+          <div class="grid grid-cols-2 gap-2 pt-2">
+            <button @click="step = 2" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl transition-colors">
+              {{ __('ui.tryon_btn_try_another') }}
+            </button>
+            <a :href="resultImageUrl" download="movr-tryon-result.jpg" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-2.5 px-3 rounded-xl text-center transition-colors">
+              {{ __('ui.tryon_btn_download') }}
+            </a>
+            <button @click="deleteMyPhoto()" class="col-span-2 text-xs font-semibold text-red-500 hover:text-red-700 py-1 text-center">
+              🗑️ {{ __('ui.tryon_btn_delete_photo') }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function tryOnModalState() {
+  return {
+    isOpen: false,
+    step: 1,
+    consent: false,
+    photoFile: null,
+    photoPreviewUrl: null,
+    sesiId: null,
+    isUploading: false,
+    isGenerating: false,
+    statusPollInterval: null,
+    progressPercent: 0,
+    generatingMessageIndex: 0,
+    generatingMessages: [
+      "{{ __('ui.tryon_generating_text_1') }}",
+      "{{ __('ui.tryon_generating_text_2') }}",
+      "{{ __('ui.tryon_generating_text_3') }}"
+    ],
+    errorMessage: null,
+
+    selectedProduct: {
+      produk_id: {{ $product->produk_id }},
+      nama_produk: @js($product->nama_produk),
+      harga: @js(number_format($product->harga_dasar, 0, ',', '.')),
+      gambar_url: @js($product->gambarProduk->first()?->url_lengkap ?? asset('images/placeholder.jpg')),
+    },
+    searchQuery: '',
+    categoryFilter: '',
+    searchResults: [],
+    isSearching: false,
+    resultImageUrl: null,
+
+    init() {},
+
+    openModal() {
+      @if(!auth()->check())
+        window.location.href = "{{ route('login') }}";
+        return;
+      @endif
+
+      @if(!$isTryOnSupported)
+        showToast("{{ __('ui.tryon_unsupported') }}", 'warning');
+        return;
+      @endif
+
+      this.isOpen = true;
+      if (!this.sesiId) {
+        this.step = 1;
+      }
+    },
+
+    closeModal() {
+      this.isOpen = false;
+      if (this.statusPollInterval) {
+        clearInterval(this.statusPollInterval);
+      }
+    },
+
+    handleFileDrop(e) {
+      const files = e.dataTransfer ? e.dataTransfer.files : e.target.files;
+      if (files && files.length > 0) {
+        this.selectFile(files[0]);
+      }
+    },
+
+    selectFile(file) {
+      if (!file) return;
+      if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/i)) {
+        showToast("{{ __('ui.tryon_error_photo_format') }}", 'warning');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("{{ __('ui.tryon_error_photo_size') }}", 'warning');
+        return;
+      }
+      this.photoFile = file;
+      this.photoPreviewUrl = URL.createObjectURL(file);
+    },
+
+    async uploadPhoto() {
+      if (!this.consent) {
+        showToast("{{ __('ui.tryon_error_consent_required') }}", 'warning');
+        return;
+      }
+      if (!this.photoFile && !this.sesiId) {
+        showToast("{{ __('ui.tryon_error_photo_required') }}", 'warning');
+        return;
+      }
+
+      if (this.sesiId) {
+        this.step = 2;
+        return;
+      }
+
+      this.isUploading = true;
+      this.errorMessage = null;
+
+      const formData = new FormData();
+      formData.append('foto', this.photoFile);
+      formData.append('consent', '1');
+
+      try {
+        const res = await fetch("{{ route('tryon.upload') }}", {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+        if (res.ok && data.sesi_id) {
+          this.sesiId = data.sesi_id;
+          this.step = 2;
+        } else {
+          this.errorMessage = data.message || "Gagal mengunggah foto.";
+          showToast(this.errorMessage, 'warning');
+        }
+      } catch (err) {
+        this.errorMessage = "Terjadi kesalahan jaringan.";
+        showToast(this.errorMessage, 'warning');
+      } finally {
+        this.isUploading = false;
+      }
+    },
+
+    async searchProducts() {
+      this.isSearching = true;
+      try {
+        const params = new URLSearchParams({
+          q: this.searchQuery,
+          category: this.categoryFilter
+        });
+        const res = await fetch(`{{ route('tryon.products') }}?${params.toString()}`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        const data = await res.json();
+        this.searchResults = data.data || [];
+      } catch (e) {
+        //
+      } finally {
+        this.isSearching = false;
+      }
+    },
+
+    selectProductForTryOn(prod) {
+      this.selectedProduct = prod;
+    },
+
+    async startGeneration() {
+      if (!this.sesiId || !this.selectedProduct) return;
+
+      this.step = 3;
+      this.isGenerating = true;
+      this.progressPercent = 10;
+      this.errorMessage = null;
+
+      try {
+        const res = await fetch("{{ route('tryon.generate') }}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          },
+          body: JSON.stringify({
+            sesi_id: this.sesiId,
+            produk_id: this.selectedProduct.produk_id
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          this.errorMessage = errData.message || "Gagal memulai generasi Try-On.";
+          this.step = 2;
+          this.isGenerating = false;
+          showToast(this.errorMessage, 'warning');
+          return;
+        }
+
+        this.pollStatus();
+      } catch (e) {
+        this.errorMessage = "Gagal memulai proses.";
+        this.step = 2;
+        this.isGenerating = false;
+      }
+    },
+
+    pollStatus() {
+      let attempts = 0;
+      const intervalMsg = setInterval(() => {
+        this.generatingMessageIndex = (this.generatingMessageIndex + 1) % this.generatingMessages.length;
+      }, 3000);
+
+      this.statusPollInterval = setInterval(async () => {
+        attempts++;
+        this.progressPercent = Math.min(90, 10 + attempts * 15);
+
+        try {
+          const res = await fetch(`/tryon/status/${this.sesiId}`, {
+            headers: { 'Accept': 'application/json' }
+          });
+          const data = await res.json();
+
+          if (data.status === 'done') {
+            clearInterval(this.statusPollInterval);
+            clearInterval(intervalMsg);
+            this.progressPercent = 100;
+            this.resultImageUrl = `/tryon/result/${this.sesiId}?t=${Date.now()}`;
+            this.isGenerating = false;
+            this.step = 4;
+          } else if (data.status === 'failed') {
+            clearInterval(this.statusPollInterval);
+            clearInterval(intervalMsg);
+            this.isGenerating = false;
+            this.errorMessage = data.pesan_error || "Proses Try-On gagal.";
+            this.step = 2;
+            showToast(this.errorMessage, 'warning');
+          }
+        } catch (e) {
+          // Retry
+        }
+
+        if (attempts > 30) {
+          clearInterval(this.statusPollInterval);
+          clearInterval(intervalMsg);
+          this.isGenerating = false;
+          this.errorMessage = "Waktu tunggu habis. Silakan coba lagi.";
+          this.step = 2;
+        }
+      }, 2500);
+    },
+
+    async deleteMyPhoto() {
+      if (!confirm("{{ __('ui.tryon_confirm_delete_photo') }}")) return;
+
+      if (this.sesiId) {
+        fetch(`/tryon/photo/${this.sesiId}`, {
+          method: 'DELETE',
+          headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+          }
+        });
+      }
+
+      this.photoFile = null;
+      this.photoPreviewUrl = null;
+      this.sesiId = null;
+      this.resultImageUrl = null;
+      this.step = 1;
+      showToast("Foto Anda telah dihapus.");
+    }
+  };
+}
 </script>
 @endsection

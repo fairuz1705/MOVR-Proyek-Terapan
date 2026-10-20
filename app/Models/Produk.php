@@ -43,6 +43,7 @@ class Produk extends Model
         'scheduled_at',
         'is_active',
         'is_featured',
+        'tryon_tipe',
     ];
 
     protected $casts = [

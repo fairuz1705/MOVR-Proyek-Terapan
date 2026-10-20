@@ -31,7 +31,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(\App\Services\TryOn\TryOnProvider::class, function ($app) {
+            $driver = config('services.tryon.driver', 'mock');
+            return match ($driver) {
+                'huggingface' => new \App\Services\TryOn\Providers\HuggingFaceTryOnProvider(),
+                'gemini' => new \App\Services\TryOn\Providers\GeminiTryOnProvider(),
+                default => new \App\Services\TryOn\Providers\MockTryOnProvider(),
+            };
+        });
     }
 
     /**

@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'tryon' => [
+        'driver' => env('TRYON_DRIVER', 'mock'),
+        'huggingface_token' => env('HUGGINGFACE_API_TOKEN', ''),
+        'gemini_key' => env('GEMINI_API_KEY', ''),
+        'max_per_day' => env('TRYON_MAX_PER_DAY', 10),
+    ],
+
 ];

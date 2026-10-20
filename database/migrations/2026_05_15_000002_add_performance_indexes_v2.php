@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
 
         try {
             // transaksi indexes - menggunakan user_id (actual column)
@@ -53,13 +55,17 @@ return new class extends Migration
             // Log but don't fail - indexes might already exist
             \Log::error('Performance indexes migration error: ' . $e->getMessage());
         } finally {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            }
         }
     }
 
     public function down(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
 
         try {
             DB::statement("ALTER TABLE transaksi DROP INDEX IF EXISTS idx_transaksi_user_status");
@@ -86,7 +92,9 @@ return new class extends Migration
         } catch (\Exception $e) {
             \Log::error('Performance indexes rollback error: ' . $e->getMessage());
         } finally {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            if (DB::getDriverName() === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            }
         }
     }
 };

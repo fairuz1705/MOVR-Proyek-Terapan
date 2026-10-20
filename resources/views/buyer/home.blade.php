@@ -1,382 +1,525 @@
 @extends('layouts.buyer')
 
-@section('title', 'Home - MOVR')
+@section('title', 'MOVR — Technical Sportswear & Performance Gear')
+
+@push('head')
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050507;
+  --fg: #e9ecf2;
+  --dim: #7b8090;
+  --line: rgba(233, 236, 242, .22);
+  --panel: rgba(12, 13, 18, .82);
+  --accent-movr: #63A2BB;
+  color-scheme: dark;
+}
+
+.movr-3d-landing {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Share Tech Mono', ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  background-image: linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .035) 1px, transparent 1px);
+  background-size: 14px 14px;
+  margin: -1.5rem -1rem; /* Full bleed inside layout container */
+}
+
+@media (min-width: 640px) {
+  .movr-3d-landing { margin: -1.5rem -1.5rem; }
+}
+@media (min-width: 1024px) {
+  .movr-3d-landing { margin: -2rem -2rem; }
+}
+
+.movr-3d-landing a { color: inherit; text-decoration: none; }
+.movr-3d-landing .btn {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, .6);
+  color: var(--fg);
+  padding: 10px 20px;
+  font: inherit;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+  border-radius: 4px;
+}
+.movr-3d-landing .btn:hover, .movr-3d-landing .btn:focus-visible {
+  background: var(--fg);
+  color: #000;
+  outline: none;
+  border-color: var(--fg);
+}
+
+.movr-3d-landing h2 {
+  font-weight: 400;
+  font-size: clamp(34px, 5.4vw, 64px);
+  line-height: 1;
+  letter-spacing: .02em;
+}
+.movr-3d-landing .dim { color: var(--dim); }
+
+.movr-3d-landing .hero { position: relative; height: 100vh; min-height: 640px; }
+.movr-3d-landing #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.movr-3d-landing .hero .l, .movr-3d-landing .hero .r { position: absolute; top: 50%; max-width: 190px; z-index: 10; pointer-events: none; }
+.movr-3d-landing .hero .l { left: 24px; }
+.movr-3d-landing .hero .r { right: 24px; text-align: right; }
+.movr-3d-landing .hero .c {
+  position: absolute;
+  bottom: 90px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  z-index: 10;
+}
+.movr-3d-landing .hero .c p { max-width: 440px; color: var(--dim); }
+.movr-3d-landing .corner {
+  position: absolute;
+  bottom: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  padding: 8px 12px;
+  max-width: 260px;
+  font-size: 10px;
+  color: var(--dim);
+  background: var(--panel);
+  z-index: 10;
+}
+.movr-3d-landing .corner.a { left: 24px; }
+.movr-3d-landing .corner.b { right: 24px; }
+
+.movr-3d-landing section { position: relative; padding: 110px 24px; }
+.movr-3d-landing .details { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: end; min-height: 90vh; }
+.movr-3d-landing .details .copy { display: grid; gap: 20px; align-self: start; }
+.movr-3d-landing .details .copy p { max-width: 320px; color: var(--dim); }
+.movr-3d-landing .feat { display: grid; gap: 10px; width: min(380px, 100%); justify-self: end; }
+.movr-3d-landing .feat div { border: 1px solid var(--line); background: var(--panel); padding: 14px 16px; border-radius: 4px; }
+.movr-3d-landing .feat b { font-weight: 400; display: block; font-size: 14px; color: var(--fg); }
+.movr-3d-landing .feat span { color: var(--dim); font-size: 11px; }
+
+.movr-3d-landing .coll .head { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 36px; }
+.movr-3d-landing .coll .head p { max-width: 260px; color: var(--dim); font-size: 11px; }
+.movr-3d-landing .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.movr-3d-landing .card {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  position: relative;
+  border-radius: 6px;
+  transition: border-color .2s;
+}
+.movr-3d-landing .card:hover { border-color: rgba(99, 162, 187, 0.6); }
+.movr-3d-landing .card .t { display: flex; justify-content: space-between; gap: 8px; text-transform: none; font-weight: bold; }
+.movr-3d-landing .card canvas { width: 100%; height: auto; display: block; background: #05070D; border-radius: 4px; }
+.movr-3d-landing .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.movr-3d-landing .tags i { font-style: normal; border: 1px solid var(--line); color: var(--dim); font-size: 10px; padding: 3px 8px; border-radius: 2px; }
+.movr-3d-landing .card .btn { justify-content: space-between; opacity: 0; transform: translateY(6px); transition: .2s; margin-top: 4px; }
+.movr-3d-landing .card:hover .btn, .movr-3d-landing .card:focus-within .btn { opacity: 1; transform: none; }
+.movr-3d-landing .center { text-align: center; margin-top: 36px; }
+
+.movr-3d-landing .tech { display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; min-height: 140vh; }
+.movr-3d-landing .tech .stick { position: sticky; top: 0; height: 100vh; display: grid; align-content: center; }
+.movr-3d-landing .tech .copy { display: grid; gap: 24px; align-self: center; }
+.movr-3d-landing .tech .copy p { max-width: 320px; color: var(--dim); }
+.movr-3d-landing .stage { perspective: 900px; display: grid; place-items: center; height: 100%; }
+.movr-3d-landing .stack { position: relative; width: 300px; height: 300px; transform-style: preserve-3d; transform: rotateX(62deg) rotateZ(-38deg); }
+.movr-3d-landing .layer {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, .3);
+  transition: transform .1s linear;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  color: #fff;
+  letter-spacing: .1em;
+}
+.movr-3d-landing .l1 { background: linear-gradient(135deg, #0a2a44, #2c7aa8 60%, #0a1633); box-shadow: 0 0 40px rgba(99, 162, 187, .4); }
+.movr-3d-landing .l2 { background: linear-gradient(135deg, #3b1d6e, #7a43d0); border-radius: 30px; }
+.movr-3d-landing .l3 { background: linear-gradient(135deg, #2a1559, #5a2fa6); border-radius: 30px; }
+.movr-3d-landing .l4 { background: #14121f; }
+.movr-3d-landing .note {
+  position: absolute;
+  right: 0;
+  top: 20%;
+  width: min(280px, 100%);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  padding: 14px 16px;
+  font-size: 11px;
+  border-radius: 6px;
+}
+.movr-3d-landing .note b { font-weight: 400; display: block; font-size: 14px; margin-bottom: 4px; color: var(--fg); }
+
+.movr-3d-landing .faq { display: grid; grid-template-columns: 1fr 1.1fr; gap: 32px; align-items: start; }
+.movr-3d-landing .faq details { border: 1px solid var(--line); background: var(--panel); padding: 16px 18px; margin-bottom: 10px; border-radius: 4px; }
+.movr-3d-landing .faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; font-size: 14px; font-weight: bold; }
+.movr-3d-landing .faq summary::after { content: "+"; font-size: 16px; color: var(--accent-movr); }
+.movr-3d-landing .faq details[open] summary::after { content: "−"; }
+.movr-3d-landing .faq p { color: var(--dim); margin-top: 12px; font-size: 12px; leading-height: 1.6; }
+
+.movr-3d-landing footer {
+  padding: 60px 24px calc(40px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  color: var(--dim);
+  font-size: 11px;
+}
+.movr-3d-landing #glitch { display: inline-block; }
+
+@media (max-width: 820px) {
+  .movr-3d-landing .hero .l, .movr-3d-landing .hero .r { top: 22%; max-width: 130px; font-size: 11px; }
+  .movr-3d-landing .details, .movr-3d-landing .tech, .movr-3d-landing .faq { grid-template-columns: 1fr; }
+  .movr-3d-landing .feat { justify-self: stretch; }
+  .movr-3d-landing .grid { grid-template-columns: 1fr 1fr; }
+  .movr-3d-landing .coll .head { flex-direction: column; align-items: start; }
+  .movr-3d-landing .tech { min-height: auto; }
+  .movr-3d-landing .tech .stick { position: relative; height: auto; padding: 40px 0; }
+  .movr-3d-landing .stack { width: 220px; height: 220px; }
+  .movr-3d-landing .note { position: static; margin-top: 20px; }
+  .movr-3d-landing .corner { display: none; }
+  .movr-3d-landing .card .btn { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}
+</style>
+@endpush
 
 @section('content')
-@php
-    $heroProduct = $newArrivals->first();
-    $heroImage = optional($heroProduct?->gambarUtama)->url_lengkap
-        ?? optional($heroProduct?->gambarUtama)->url_safe
-        ?? asset('images/default-banner.svg');
-
-    $tickerItems = ['Running', 'Basketball', 'Football', 'Gym', 'Tennis', 'Cycling', 'Swimming', 'Yoga', 'Boxing', 'Training'];
-    $sportCards = [
-        [
-            'image' => 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=600&q=80', 
-            'title' => 'Running', 
-            'subtitle' => 'Shoes, apparel, and endurance gear'
-        ],
-        [
-            'image' => 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80', 
-            'title' => 'Gym & Training', 
-            'subtitle' => 'Strength essentials and activewear'
-        ],
-        [
-            'image' => 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80', 
-            'title' => 'Football', 
-            'subtitle' => 'Kits, boots, and match-day equipment'
-        ],
-        [
-            'image' => 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=600&q=80', 
-            'title' => 'Racket Sports', 
-            'subtitle' => 'Fast play gear for tennis and more'
-        ],
-    ];
-    $featureStats = [
-        ['value' => '2K+', 'label' => 'Products curated'],
-        ['value' => '15+', 'label' => 'Sport categories'],
-        ['value' => '98%', 'label' => 'Satisfaction rate'],
-    ];
-@endphp
-
-<style>
-    @keyframes movrTicker {
-        from { transform: translateX(0); }
-        to { transform: translateX(-50%); }
-    }
-
-    @keyframes movrFloat {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-    }
-
-    .movr-ticker-track {
-        animation: movrTicker 22s linear infinite;
-    }
-
-    .movr-float {
-        animation: movrFloat 4s ease-in-out infinite;
-    }
-
-    .scrollbar-none::-webkit-scrollbar {
-        display: none;
-    }
-
-    .scrollbar-none {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-</style>
-
-{{-- Full-Width Hero Section (Directly attached to promo banner above, zero top margin) --}}
-<section class="w-full relative overflow-hidden bg-[#0A1020] text-white shadow-2xl border-b border-slate-800">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,162,187,0.36),transparent_34%),linear-gradient(125deg,rgba(10,16,32,0.96),rgba(13,23,44,0.92))]"></div>
-    <div class="absolute -right-12 top-12 h-56 w-56 rounded-full border border-white/10"></div>
-    <div class="absolute -left-16 bottom-0 h-72 w-72 rounded-full border border-[#63A2BB]/15"></div>
-
-    <div class="relative max-w-7xl mx-auto grid gap-10 px-4 sm:px-6 md:px-12 py-10 md:grid-cols-2 md:py-16 lg:px-8 lg:py-20">
-        <div class="space-y-6">
-            <div class="inline-flex items-center gap-3 rounded-full border border-[#63A2BB]/30 bg-[#63A2BB]/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.28em] text-[#8FD0E3]">
-                <span class="h-2 w-2 rounded-full bg-[#63A2BB] shadow-[0_0_0_6px_rgba(99,162,187,0.18)]"></span>
-                New Drop 2026
-            </div>
-
-            <div class="space-y-4">
-                <p class="text-sm font-semibold uppercase tracking-[0.32em] text-white/55">PUSH YOUR LIMITS</p>
-                <h1 class="max-w-xl text-4xl font-black leading-[0.9] tracking-tight sm:text-5xl lg:text-7xl">
-                    <span class="block">PUSH</span>
-                    <span class="block text-transparent [-webkit-text-stroke:2px_#63A2BB]">YOUR</span>
-                    <span class="block text-[#63A2BB]">LIMITS</span>
-                </h1>
-                <p class="max-w-xl text-sm leading-7 text-white/70 sm:text-base">
-                    Premium sportswear, footwear, and gear untuk latihan, kompetisi, dan lifestyle aktif yang bergerak cepat.
-                </p>
-            </div>
-
-            <div class="flex flex-wrap gap-3">
-                <a href="{{ route('product.index') }}" class="inline-flex items-center justify-center rounded-full bg-[#63A2BB] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#63A2BB]/30 transition hover:-translate-y-0.5 hover:bg-[#4e8fa8]">
-                    Shop Now
-                    <span class="ml-1">→</span>
-                </a>
-                <a href="#shop-by-sport" class="inline-flex items-center justify-center rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-bold text-white transition hover:border-[#63A2BB]/40 hover:bg-white/10">
-                    Explore Sports
-                </a>
-            </div>
-
-            <div class="grid gap-4 sm:grid-cols-3">
-                @foreach($featureStats as $stat)
-                    <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-sm">
-                        <div class="text-2xl font-black text-white">{{ $stat['value'] }}</div>
-                        <div class="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">{{ $stat['label'] }}</div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div class="relative flex items-center justify-center">
-            <div class="movr-float relative w-full max-w-sm rounded-[2rem] border border-white/10 bg-white/8 p-4 backdrop-blur-xl">
-                <div class="absolute -left-4 top-8 rounded-2xl bg-white px-4 py-3 text-slate-900 shadow-2xl">
-                    <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-[#63A2BB]">Top Pick</div>
-                    <div class="mt-1 text-sm font-black">Sports Ready</div>
-                </div>
-
-                <div class="overflow-hidden rounded-[1.5rem] bg-slate-900/40">
-                    <img src="{{ $heroImage }}" alt="Hero product" class="h-[350px] w-full object-cover object-center">
-                </div>
-
-                <div class="mt-4 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">Featured product</div>
-                            <div class="mt-1 text-base font-bold text-white">{{ $heroProduct->nama_produk ?? 'Training Essential' }}</div>
-                            <div class="text-sm text-white/55">{{ $heroProduct->tipe_olahraga ?? 'Performance gear for every session' }}</div>
-                        </div>
-                        <div class="rounded-2xl bg-[#63A2BB] px-4 py-3 text-right text-white">
-                            <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-white/80">From</div>
-                            <div class="text-lg font-black">Rp {{ number_format($heroProduct->harga_dasar ?? 349000, 0, ',', '.') }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="absolute -bottom-5 right-6 rounded-2xl border border-white/10 bg-white px-4 py-3 text-slate-900 shadow-2xl shadow-black/20">
-                <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-[#63A2BB]">4.9 / 5.0</div>
-                <div class="text-sm font-semibold">Rated by athletes</div>
-            </div>
-        </div>
+<div class="movr-3d-landing">
+  {{-- Hero Section --}}
+  <header class="hero" id="top">
+    <canvas id="gl" aria-label="Jaket puffer 3D interaktif MOVR" role="img"></canvas>
+    <div class="l">ENGINEERED<br>FOR MOTION.<br>BUILT TO ENDURE.</div>
+    <div class="r">DESIGNED<br>FOR ATHLETES.<br>READY FOR ANYTHING.</div>
+    <div class="c">
+      <p><span id="glitch">WEATHER-RESISTANT. THERMAL INSULATION.</span><br>OVERSIZED FIT. MOVR PERFORMANCE GEAR.</p>
+      <a class="btn" href="#koleksi">SHOP NOW ↗</a>
     </div>
-</section>
+    <div class="corner a">◎ BUILT ON PERFORMANCE. DRIVEN BY INNOVATION. EST. 2026</div>
+    <div class="corner b">◇ WORLDWIDE SHIPPING. FAST &amp; SECURE DELIVERY</div>
+  </header>
 
-{{-- Ticker Bar (Directly attached to Hero section, zero gap) --}}
-<section class="w-full overflow-hidden border-b border-[#63A2BB]/15 bg-[#63A2BB] py-4 text-white">
-    <div class="movr-ticker-track flex w-max items-center gap-10 whitespace-nowrap px-4 text-xs font-black uppercase tracking-[0.35em] sm:text-sm">
-        @foreach(array_merge($tickerItems, $tickerItems) as $tickerItem)
-            <span class="inline-flex items-center gap-3">
-                <span class="h-1.5 w-1.5 rounded-full bg-white/70"></span>
-                {{ $tickerItem }}
-            </span>
-        @endforeach
+  {{-- Details Section --}}
+  <section class="details" id="detail">
+    <div class="copy">
+      <h2>DETAILS<br>MATTER.</h2>
+      <p>Lapisan luar teknikal MOVR untuk bergerak, menghadapi cuaca ekstrim, dan semua tantangan di luar dugaan.</p>
+      <a class="btn" href="#koleksi" style="justify-self:start">EXPLORE THE GEAR →</a>
     </div>
-</section>
+    <div class="feat">
+      <div><b>Weather-resistant shell</b><span>Water-repellent outer shell menahan angin kencang dan hujan.</span></div>
+      <div><b>Thermal insulation</b><span>Isian canggih menjaga panas tubuh tanpa menambah beban bobot.</span></div>
+      <div><b>Reinforced construction</b><span>Jahitan bubble dan panel penguat ekstra di area tekanan tinggi.</span></div>
+      <div><b>Functional storage</b><span>Kompartemen kantong zip internal &amp; eksternal untuk perlengkapan harian.</span></div>
+      <div><b>Oversized athletic fit</b><span>Siluet ergonomis longgar untuk kebebasan gerak bebas dan layering.</span></div>
+    </div>
+  </section>
 
-<div class="space-y-16 py-12">
-    {{-- Flash Sale Section --}}
-    @if(isset($flashProducts) && $flashProducts->isNotEmpty())
-        <section class="section-shell space-y-6" x-data="countdown('{{ $flashEndTime }}')" x-init="init()">
-            <div class="rounded-[2rem] border border-[#FF4E4E]/30 bg-gradient-to-br from-[#1C0D0D] to-[#0A0505] p-6 sm:p-8 lg:p-10 shadow-xl shadow-red-950/20 relative overflow-hidden">
-                {{-- Decorative background glow --}}
-                <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-red-600/15 blur-3xl pointer-events-none"></div>
-                <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
+  {{-- Collections Section --}}
+  <section class="coll" id="koleksi">
+    <div class="head">
+      <h2>COLLECTIONS.</h2>
+      <p>Jaket teknikal &amp; sportswear MOVR untuk cuaca yang berubah, gerak cepat, dan kebutuhan harian.</p>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="center">
+      <a class="btn" href="{{ route('product.index') }}">VIEW ALL PRODUCTS →</a>
+    </div>
+  </section>
 
-                <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/10">
-                    <div class="space-y-2">
-                        <div class="inline-flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-red-400">
-                            <span class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
-                            Live Now
-                        </div>
-                        <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                            <span>⚡</span> FLASH SALE
-                        </h2>
-                        <p class="text-xs sm:text-sm text-slate-400">Penawaran terbatas dengan harga terendah musim ini.</p>
-                    </div>
-
-                    {{-- Countdown timer --}}
-                    <div class="flex items-center gap-2 text-white">
-                        <div class="text-xs uppercase font-bold text-slate-400 mr-2 hidden sm:block">Ends in</div>
-                        <div class="flex gap-2 text-center font-mono">
-                            <div class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 min-w-[50px]">
-                                <div class="text-lg sm:text-xl font-black text-red-400" x-text="hours">00</div>
-                                <div class="text-[9px] uppercase tracking-wider text-slate-400">Hours</div>
-                            </div>
-                            <div class="text-xl font-bold self-center text-slate-500">:</div>
-                            <div class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 min-w-[50px]">
-                                <div class="text-lg sm:text-xl font-black text-red-400" x-text="minutes">00</div>
-                                <div class="text-[9px] uppercase tracking-wider text-slate-400">Mins</div>
-                            </div>
-                            <div class="text-xl font-bold self-center text-slate-500">:</div>
-                            <div class="rounded-xl border border-white/15 bg-white/5 px-3 py-2 min-w-[50px]">
-                                <div class="text-lg sm:text-xl font-black text-red-400" x-text="seconds">00</div>
-                                <div class="text-[9px] uppercase tracking-wider text-slate-400">Secs</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Product cards slider/grid --}}
-                <div class="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    @foreach($flashProducts as $item)
-                        @php
-                            $p = $item->produk;
-                            $pr = $item->promo;
-                            $img = optional($p->gambarUtama)->url_lengkap
-                                ?? optional($p->gambarUtama)->url_safe
-                                ?? asset('images/default-product.svg');
-                            $hargaDasar = (float) $p->harga_dasar;
-                            $diskon = (float) $pr->diskon;
-                            $hargaAkhir = max(0, $hargaDasar - $diskon);
-                            $persenDiskon = $hargaDasar > 0 ? round(($diskon / $hargaDasar) * 100) : 0;
-                            if (!empty($pr->persen_diskon) && $pr->persen_diskon > 0) {
-                                $persenDiskon = (int) $pr->persen_diskon;
-                            }
-                        @endphp
-                        <div class="group relative rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4 transition hover:-translate-y-1 hover:border-red-500/50 hover:bg-white/10 flex flex-col justify-between">
-                            <div>
-                                <div class="relative overflow-hidden rounded-xl bg-slate-900/60 aspect-square">
-                                    <img src="{{ $img }}" alt="{{ $p->nama_produk }}" class="h-full w-full object-cover object-center group-hover:scale-105 transition duration-300">
-                                    <div class="absolute top-2 left-2 rounded-lg bg-red-600 px-2 py-1 text-[10px] font-black uppercase text-white shadow-md">
-                                        -{{ $persenDiskon }}%
-                                    </div>
-                                </div>
-                                <div class="mt-3 space-y-1">
-                                    <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 line-clamp-1">
-                                        {{ $p->kategori->nama_kategori ?? 'Sports' }}
-                                    </div>
-                                    <h3 class="text-xs sm:text-sm font-bold text-white line-clamp-1 group-hover:text-red-400 transition">
-                                        <a href="{{ route('product.show', $p->slug) }}">{{ $p->nama_produk }}</a>
-                                    </h3>
-                                </div>
-                            </div>
-                            <div class="mt-3 pt-2 border-t border-white/10">
-                                <div class="flex items-baseline gap-2">
-                                    <span class="text-sm sm:text-base font-black text-red-400">Rp {{ number_format($hargaAkhir, 0, ',', '.') }}</span>
-                                    <span class="text-[10px] sm:text-xs text-slate-500 line-through">Rp {{ number_format($hargaDasar, 0, ',', '.') }}</span>
-                                </div>
-                                <a href="{{ route('product.show', $p->slug) }}" class="mt-3 block w-full rounded-xl bg-red-600 py-2 text-center text-xs font-bold text-white shadow-lg hover:bg-red-500 transition">
-                                    Beli Sekarang
-                                </a>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
-
-    {{-- Recommended Products (Horizontal Carousel) --}}
-    @if(isset($recommendedProducts) && $recommendedProducts->isNotEmpty())
-        <section class="section-shell space-y-6">
-            <div class="flex items-end justify-between gap-4">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.28em] text-[#63A2BB]">Rekomendasi Untuk Anda</p>
-                    <h2 class="mt-1 text-2xl sm:text-3xl font-black text-slate-900">Recommended Products</h2>
-                </div>
-                <span class="text-xs text-slate-400 font-semibold hidden sm:inline-flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-full">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    Swipe ke kanan / kiri
-                </span>
-            </div>
-
-            <div class="flex overflow-x-auto pb-4 gap-6 scroll-smooth snap-x snap-mandatory scrollbar-none" style="-webkit-overflow-scrolling: touch;">
-                @foreach($recommendedProducts as $product)
-                    <div class="w-[260px] sm:w-[280px] flex-shrink-0 snap-start">
-                        <x-product-card :produk="$product" :badge="'FOR YOU'" :showWishlistBtn="true" />
-                    </div>
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- Shop by Sport --}}
-    <section id="shop-by-sport" class="section-shell space-y-6">
-        <div class="flex items-end justify-between border-b border-slate-200 pb-4">
-            <div>
-                <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#63A2BB]">Gear Up</p>
-                <h2 class="text-2xl font-black text-slate-900 sm:text-3xl">Shop by Sport</h2>
-            </div>
-            <a href="{{ route('product.index') }}" class="text-xs font-bold uppercase tracking-wider text-[#63A2BB] hover:underline">View All Sports →</a>
+  {{-- Technology Section --}}
+  <section class="tech" id="teknologi">
+    <div class="stick">
+      <div class="copy">
+        <h2>TECHNOLOGY<br>ENGINEERED<br>TO ENDURE</h2>
+        <p>Setiap detail punya fungsi spesifik, dari outer shell pelindung di luar sampai insulasi di dalam. Dirancang untuk bekerja tanpa mengorbankan bentuknya.</p>
+      </div>
+    </div>
+    <div class="stick">
+      <div class="stage">
+        <div class="stack" id="stack">
+          <div class="layer l4">BASE LAYER</div>
+          <div class="layer l3">COMFORT LINING</div>
+          <div class="layer l2">THERMAL INSULATION</div>
+          <div class="layer l1">OUTER SHELL</div>
         </div>
+      </div>
+      <div class="note" id="note">
+        <b>Outer shell</b>
+        <span class="dim">Lapisan luar tahan air yang menolak hujan dan angin kencang.</span>
+      </div>
+    </div>
+  </section>
 
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            @foreach($sportCards as $card)
-                <div class="group relative overflow-hidden rounded-[1.5rem] bg-slate-900 text-white shadow-md">
-                    <img src="{{ $card['image'] }}" alt="{{ $card['title'] }}" class="h-64 w-full object-cover opacity-70 transition duration-500 group-hover:scale-105 group-hover:opacity-50">
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-                    <div class="absolute bottom-0 p-6">
-                        <h3 class="text-xl font-bold">{{ $card['title'] }}</h3>
-                        <p class="mt-1 text-xs text-slate-300">{{ $card['subtitle'] }}</p>
-                        <a href="{{ route('product.index') }}" class="mt-4 inline-flex items-center text-xs font-bold text-[#63A2BB] group-hover:text-white">
-                            Explore Collection <span class="ml-1">→</span>
-                        </a>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </section>
+  {{-- FAQ Section --}}
+  <section class="faq" id="faq">
+    <h2>NEED<br>TO KNOW.</h2>
+    <div>
+      <details open>
+        <summary>Bagaimana memilih ukuran yang tepat?</summary>
+        <p>Gunakan panduan ukuran MOVR untuk mengukur badan. Potongannya dirancang athletic oversized, jadi ambil ukuran biasa untuk tampilan longgar yang nyaman.</p>
+      </details>
+      <details>
+        <summary>Bahan apa yang dipakai pada produk MOVR?</summary>
+        <p>Shell ripstop teknikal premium, insulasi termal menahan dingin, dan lapisan dalam micro-mesh yang lembut serta menyerap keringat.</p>
+      </details>
+      <details>
+        <summary>Bagaimana cara merawat jaket teknikal ini?</summary>
+        <p>Cuci dengan siklus lembut air dingin, hindari deterjen keras dan pemutih, lalu keringkan di udara terbuk tanpa pemanas langsung.</p>
+      </details>
+      <details>
+        <summary>Apakah ada pengiriman internasional?</summary>
+        <p>Ya, kami melayani pengiriman ke seluruh dunia dengan pelacakan (tracking) terintegrasi pada setiap pesanan MOVR.</p>
+      </details>
+      <details>
+        <summary>Bisakah pesanan ditukar atau dikembalikan?</summary>
+        <p>Produk yang belum dipakai dan tag masih utuh bisa dikembalikan atau ditukar dalam jangka waktu 14 hari setelah barang diterima.</p>
+      </details>
+    </div>
+  </section>
 
-    {{-- Best Sellers --}}
-    @if(isset($bestSellers) && $bestSellers->isNotEmpty())
-        <section class="section-shell space-y-6">
-            <div class="flex items-end justify-between border-b border-slate-200 pb-4">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#63A2BB]">Paling Populer</p>
-                    <h2 class="text-2xl font-black text-slate-900 sm:text-3xl">Best Sellers</h2>
-                </div>
-                <a href="{{ route('product.index') }}?sort=terlaris" class="text-xs font-bold uppercase tracking-wider text-[#63A2BB] hover:underline">View All →</a>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                @foreach($bestSellers as $product)
-                    <x-product-card :produk="$product" :badge="'BESTSELLER'" :showWishlistBtn="true" />
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- New Arrivals --}}
-    @if($newArrivals->isNotEmpty())
-        <section class="section-shell space-y-6">
-            <div class="flex items-end justify-between border-b border-slate-200 pb-4">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.25em] text-[#63A2BB]">Fresh Drops</p>
-                    <h2 class="text-2xl font-black text-slate-900 sm:text-3xl">New Arrivals</h2>
-                </div>
-                <a href="{{ route('product.index') }}?sort=terbaru" class="text-xs font-bold uppercase tracking-wider text-[#63A2BB] hover:underline">See All Products →</a>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                @foreach($newArrivals as $product)
-                    <x-product-card :produk="$product" :badge="'NEW'" :showWishlistBtn="true" />
-                @endforeach
-            </div>
-        </section>
-    @endif
+  {{-- Footer --}}
+  <footer>
+    <span>MOVR ATHLETICS © 2026</span>
+    <span>MOVR Performance Gear &amp; Technical Apparel. All Rights Reserved.</span>
+  </footer>
 </div>
 @endsection
 
 @section('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-    function countdown(endTimeStr) {
-        return {
-            endTime: endTimeStr ? new Date(endTimeStr).getTime() : 0,
-            hours: '00',
-            minutes: '00',
-            seconds: '00',
-            timer: null,
-            init() {
-                if (!this.endTime) return;
-                this.update();
-                this.timer = setInterval(() => {
-                    this.update();
-                }, 1000);
-            },
-            update() {
-                const now = new Date().getTime();
-                const diff = this.endTime - now;
-                if (diff <= 0) {
-                    clearInterval(this.timer);
-                    this.hours = '00';
-                    this.minutes = '00';
-                    this.seconds = '00';
-                    return;
-                }
-                const h = Math.floor(diff / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((diff % (1000 * 60)) / 1000);
-                this.hours = String(h).padStart(2, '0');
-                this.minutes = String(m).padStart(2, '0');
-                this.seconds = String(s).padStart(2, '0');
-            }
-        }
+// ---------- 3D jacket builder ----------
+function makeEnv(r) {
+  var env = new THREE.Scene();
+  [[0x2a4dff, -6, 3, 2], [0xff2d8a, 6, 0, 3], [0x7a5cff, 0, 6, -2], [0x20e0ff, -3, -4, 5], [0xffffff, 4, 5, 5], [0xffffff, -4, 2, 6]].forEach(function(p) {
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), new THREE.MeshBasicMaterial({ color: p[0], side: 2 }));
+    m.position.set(p[1], p[2], p[3]);
+    m.lookAt(0, 0, 0);
+    env.add(m);
+  });
+  env.add(new THREE.Mesh(new THREE.SphereGeometry(20, 16, 16), new THREE.MeshBasicMaterial({ color: 0x04050a, side: 1 })));
+  return new THREE.PMREMGenerator(r).fromScene(env, 0.02).texture;
+}
+
+function jMat(c, m, r) {
+  return new THREE.MeshPhysicalMaterial({
+    color: c,
+    metalness: m,
+    roughness: r,
+    clearcoat: 1,
+    clearcoatRoughness: .06,
+    envMapIntensity: 1.5,
+    side: 2
+  });
+}
+
+function baffled(rx, rz, h, n, bulge, hem) {
+  var g = new THREE.CylinderGeometry(1, 1, h, 56, 90, true), p = g.attributes.position;
+  for (var i = 0; i < p.count; i++) {
+    var x = p.getX(i), y = p.getY(i), z = p.getZ(i), t = (y + h / 2) / h;
+    var b = Math.pow(Math.abs(Math.sin(t * n * Math.PI)), .55);
+    var k = (1 + bulge * b) * (1 - (1 - t) * hem);
+    p.setXYZ(i, x * rx * k, y, z * rz * k);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+function makeJacket(mat, dark) {
+  var J = new THREE.Group(), M = function(g, m, x, y, z) {
+    var o = new THREE.Mesh(g, m || mat);
+    o.position.set(x, y, z);
+    J.add(o);
+    return o;
+  };
+  M(baffled(1.2, .78, 2.7, 6, .13, .1), mat, 0, 0, 0);
+  M(baffled(.62, .52, .7, 2, .2, 0), mat, 0, 1.6, 0);
+  for (var s = -1; s <= 1; s += 2) {
+    var sl = M(baffled(.44, .42, 2.4, 5, .17, .2), mat, s * 2.18, .28, .04);
+    sl.rotation.z = s * .95;
+  }
+  M(new THREE.BoxGeometry(.05, 2.6, .03), dark, 0, 0, .92);
+  M(new THREE.BoxGeometry(.55, .32, .09), dark, -.62, .1, .9);
+  M(new THREE.BoxGeometry(.55, .32, .09), dark, .62, .1, .9);
+  M(new THREE.BoxGeometry(.55, .24, .09), dark, -.62, -.55, .9);
+  M(new THREE.BoxGeometry(.55, .24, .09), dark, .62, -.55, .9);
+  return J;
+}
+var darkMat = jMat(0x15161c, .8, .35);
+
+// ---------- Collections (real 3D renders) ----------
+@php
+  $collItems = [
+    ["MOVR Shadow Puffer Jacket", "Rp 460.000", "0x63A2BB", ["OVERSIZED FIT", "LIMITED"]],
+    ["MOVR Tactical Hooded Jacket", "Rp 395.000", "0xff3fa8", ["LAYERING FRIENDLY", "UTILITY"]],
+    ["MOVR Thermal Bomber Jacket", "Rp 340.000", "0xff3a12", ["THERMAL INSULATION", "WATERPROOF"]],
+    ["MOVR Tech Shell Jacket", "Rp 520.000", "0x1f4fff", ["WATER RESISTANT", "BREATHABLE"]]
+  ];
+@endphp
+
+var items = [
+  ["MOVR Shadow Puffer Jacket", "Rp 460.000", 0x63A2BB, ["OVERSIZED FIT", "LIMITED"]],
+  ["MOVR Tactical Hooded Jacket", "Rp 395.000", 0xff3fa8, ["LAYERING FRIENDLY", "UTILITY"]],
+  ["MOVR Thermal Bomber Jacket", "Rp 340.000", 0xff3a12, ["THERMAL INSULATION", "WATERPROOF"]],
+  ["MOVR Tech Shell Jacket", "Rp 520.000", 0x1f4fff, ["WATER RESISTANT", "BREATHABLE"]]
+];
+
+var cart = 0, g = document.getElementById('grid'), cards = [];
+items.forEach(function(it) {
+  var d = document.createElement('div');
+  d.className = 'card';
+  d.innerHTML = '<div class="t"><span>' + it[0] + '</span><span>' + it[1] + '</span></div><canvas width="360" height="300" aria-hidden="true"></canvas>' +
+    '<div class="tags">' + it[3].map(function(t) { return '<i>' + t + '</i>'; }).join('') + '</div>' +
+    '<a class="btn" href="{{ route("product.index") }}">SHOP NOW <span>→</span></a>';
+  g.appendChild(d);
+  cards.push({ el: d, ctx: d.querySelector('canvas').getContext('2d'), color: it[2], hover: false, rot: Math.random() * 6, vis: false });
+  d.onmouseenter = function() { cards[items.indexOf(it)].hover = true; };
+  d.onmouseleave = function() { cards[items.indexOf(it)].hover = false; };
+});
+
+(function() {
+  if (!window.THREE) return;
+  var r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setSize(360, 300, false);
+  r.setPixelRatio(1);
+  var cam = new THREE.PerspectiveCamera(30, 360 / 300, .1, 50);
+  cam.position.set(0, .1, 10.5);
+  var env = makeEnv(r), reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  cards.forEach(function(c) {
+    c.scene = new THREE.Scene();
+    c.scene.environment = env;
+    c.j = makeJacket(jMat(c.color, .25, .22), darkMat);
+    c.j.scale.setScalar(.82);
+    c.scene.add(c.j);
+  });
+
+  var io = new IntersectionObserver(function(es) {
+    es.forEach(function(e) {
+      cards.forEach(function(c) {
+        if (c.el === e.target) c.vis = e.isIntersecting;
+      });
+    });
+  });
+
+  cards.forEach(function(c) { io.observe(c.el); });
+
+  (function loop() {
+    requestAnimationFrame(loop);
+    cards.forEach(function(c) {
+      if (!c.vis) return;
+      c.rot += reduce ? 0 : (c.hover ? .035 : .006);
+      c.j.rotation.y = c.hover ? c.rot : Math.sin(c.rot) * .5;
+      r.render(c.scene, cam);
+      c.ctx.clearRect(0, 0, 360, 300);
+      c.ctx.drawImage(r.domElement, 0, 0);
+    });
+  })();
+})();
+
+// ---------- Hero 3D jacket ----------
+(function() {
+  var cv = document.getElementById('gl');
+  if (!cv || !window.THREE) return;
+  var r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true });
+  r.setPixelRatio(Math.min(devicePixelRatio, 2));
+  var sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(32, 1, .1, 50);
+  cam.position.set(0, .2, 9);
+  sc.environment = makeEnv(r);
+
+  var J = makeJacket(jMat(0x0a0f35, .6, .14), darkMat);
+  sc.add(J);
+
+  var mx = 0, my = 0, tx = 0, ty = 0;
+  addEventListener('pointermove', function(e) {
+    mx = e.clientX / innerWidth - .5;
+    my = e.clientY / innerHeight - .5;
+  });
+
+  var base = 1;
+  function rs() {
+    var w = cv.clientWidth, h = cv.clientHeight;
+    r.setSize(w, h, false);
+    cam.aspect = w / h;
+    cam.updateProjectionMatrix();
+    base = .7 + .3 * Math.min(1, w / 900);
+    J.scale.setScalar(base);
+  }
+  addEventListener('resize', rs);
+  rs();
+
+  var reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  (function loop(t) {
+    requestAnimationFrame(loop);
+    var sy = scrollY / innerHeight;
+    tx += ((mx * 1.1) - tx) * .06;
+    ty += ((my * .3) - ty) * .06;
+    J.rotation.y = tx + (reduce ? 0 : Math.sin(t * .0004) * .3) + sy * 1.6;
+    J.rotation.x = ty;
+    J.position.y = -.1 - sy * .3;
+    r.render(sc, cam);
+  })(0);
+})();
+
+// ---------- Glitch text on hero ----------
+(function() {
+  var el = document.getElementById('glitch');
+  if (!el || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  var o = el.textContent, ch = '#@%&01$▒';
+  setInterval(function() {
+    var a = o.split('');
+    for (var i = 0; i < 3; i++) {
+      a[Math.floor(Math.random() * a.length)] = ch[Math.floor(Math.random() * ch.length)];
     }
+    el.textContent = a.join('');
+    setTimeout(function() { el.textContent = o; }, 90);
+  }, 2600);
+})();
+
+// ---------- Layer explode on scroll ----------
+(function() {
+  var L = document.querySelectorAll('.movr-3d-landing .layer');
+  var sec = document.getElementById('teknologi');
+  var note = document.getElementById('note');
+  if (!sec || !note || !L.length) return;
+
+  var info = [
+    ["Outer shell", "Lapisan luar tahan air yang menolak hujan dan angin."],
+    ["Thermal insulation", "Isian bubble menahan panas tubuh tanpa terasa berat."],
+    ["Comfort lining", "Lapisan dalam lembut untuk nyaman seharian."],
+    ["Base layer", "Lapisan dasar yang menahan kelembapan dari luar."]
+  ];
+
+  function up() {
+    var b = sec.getBoundingClientRect();
+    var p = Math.min(1, Math.max(0, -b.top / (b.height - innerHeight)));
+    var gap = 20 + p * 70;
+    L.forEach(function(el, i) {
+      el.style.transform = 'translateZ(' + (i * gap) + 'px)';
+    });
+    var idx = Math.min(3, Math.floor(p * 4));
+    note.innerHTML = '<b>' + info[idx][0] + '</b><span class="dim">' + info[idx][1] + '</span>';
+  }
+  addEventListener('scroll', up, { passive: true });
+  up();
+})();
 </script>
 @endsection

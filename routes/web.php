@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\WishlistController as ApiWishlistController;
 use App\Http\Controllers\Api\CartController as ApiCartController;
 use App\Http\Controllers\Api\ReviewController as ApiReviewController;
+use App\Http\Controllers\TryOnController;
 use Illuminate\Http\Request;
 
 // Public
@@ -140,6 +141,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/{id}/read', [NotificationBuyerController::class, 'markRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationBuyerController::class, 'readAll'])->name('notifications.read-all');
     Route::get('/notifications', [NotificationBuyerController::class, 'index'])->name('notifications.index');
+
+    // AI Virtual Try-On Routes
+    Route::prefix('tryon')->name('tryon.')->group(function () {
+        Route::post('/upload', [TryOnController::class, 'upload'])->name('upload')->middleware('throttle:10,1');
+        Route::get('/products', [TryOnController::class, 'searchProducts'])->name('products');
+        Route::post('/generate', [TryOnController::class, 'generate'])->name('generate');
+        Route::get('/status/{id}', [TryOnController::class, 'checkStatus'])->name('status');
+        Route::get('/result/{id}', [TryOnController::class, 'getResult'])->name('result');
+        Route::delete('/photo/{id?}', [TryOnController::class, 'deletePhoto'])->name('delete');
+    });
 });
 
 // Admin routes (prefix /admin)
